@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Noogadev.CallableMessaging.QueueProviders;
 using System;
 using System.Threading.Tasks;
 
@@ -7,8 +6,15 @@ namespace Noogadev.CallableMessaging
 {
     public static class Consumer
     {
-        internal static IQueueProvider? QueueProvider;
-
+        /// <summary>
+        /// This function should be called in a consumer application that processes queued messages.
+        /// It should be passed a serialized callable message that will then be deserialized and invoked.
+        /// </summary>
+        /// <param name="serializedCallable">The serialized callable message to be invoked.</param>
+        /// <param name="logger">An optional logger for use with <see cref="ILoggingCallable"/> messages.</param>
+        /// <returns>Task</returns>
+        /// <exception cref="SerializationException">Thrown if the provided serializedCallable is not actually a callable message type.</exception>
+        /// <exception cref="Exception">Thrown if provided an unknown callable type or a logger is not provided for an <see cref="ILoggingCallable"/> message.</exception>
         public static async Task Consume(string serializedCallable, ILogger? logger = null)
         {
             logger?.LogInformation($"Consuming: {serializedCallable}");

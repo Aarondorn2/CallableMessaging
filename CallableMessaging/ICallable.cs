@@ -3,15 +3,26 @@ using System.Threading.Tasks;
 
 namespace Noogadev.CallableMessaging
 {
-    public abstract class CallableMessagingBase { }
+    /// <summary>
+    /// This interface is used for internal serializtion and interal functions only. It should not be implemented directly
+    /// and will fail to consume if implemented directly. Instead, use <see cref="ICallable"/>, <see cref="ILoggingCallable"/>,
+    /// or another CallableMessaging interface that includes a `CallAsync` function 
+    /// </summary>
+    public interface ICallableMessagingBase { }
 
-    public abstract class ICallable : CallableMessagingBase
+    /// <summary>
+    /// Used to process generic logic
+    /// </summary>
+    public interface ICallable : ICallableMessagingBase
     {
-        public abstract Task CallAsync();
+        public Task CallAsync();
     }
 
-    public abstract class ILoggingCallable : CallableMessagingBase
+    /// <summary>
+    /// Used to process generic logic with access to a logger
+    /// </summary>
+    public interface ILoggingCallable : ICallableMessagingBase
     {
-        public abstract Task CallAsync(ILogger logger);
+        public Task CallAsync(ILogger logger);
     }
 }

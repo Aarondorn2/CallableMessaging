@@ -1,16 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
     <LangVersion>9</LangVersion>
     <RootNamespace>Noogadev.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+
+    <PackageId>CallableMessaging</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Aaron Heidorn, Eric Polino</Authors>
+    <PackageTags>message;messaging;queue;sqs</PackageTags>
+    <PackageDescription>
+        CallableMessaging is a pattern for generic messaging where the message (instead of a queue/consumer) defines its own processing.
+        This pattern allows for simplified messaging architecture and rapid development of asynchronous processing. It includes a default
+        implementation for use with AWS SQS, but can be extended to support other queue providers.
+    </PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.7.2.14" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="System.Text.Json" Version="6.0.1" />
   </ItemGroup>
 
 </Project>

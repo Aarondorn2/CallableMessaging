@@ -1,6 +1,4 @@
-﻿using Noogadev.CallableMessaging.QueueProviders;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,22 +6,30 @@ namespace Noogadev.CallableMessaging
 {
     public static class Publisher
     {
-        internal static IQueueProvider? QueueProvider;
-
-        public static Task Publish(this ICallable callable, string? queueName = null)
+        /// <summary>
+        /// Publish a callable message to a queue.
+        /// If a queueName is not provided, the <see cref="QueueProviders.IQueueProvider"/> default will be used.
+        /// </summary>
+        /// <param name="callable">The message to place on a queue.</param>
+        /// <param name="queueName">The queue to place the message on. `null` signifies the default queue should be used.</param>
+        /// <returns>Task</returns>
+        public static Task Publish(this ICallableMessagingBase callable, string? queueName = null)
         {
-            if (QueueProvider == null) throw new Exception("QueueProvider is null; Invoke CallableMessaging.Init() before use.");
-
             var serialized = Serialization.SerializeCallable(callable);
-            return QueueProvider.Enqueue(queueName!, serialized);
+            return CallableMessaging.GetQueueProvider().Enqueue(queueName!, serialized);
         }
 
-        public static Task PublishBatch(this IEnumerable<ICallable> callables, string? queueName = null)
+        /// <summary>
+        /// Publish one or more callable message to a queue in batch.
+        /// If a queueName is not provided, the <see cref="QueueProviders.IQueueProvider"/> default will be used.
+        /// </summary>
+        /// <param name="callable">The messages to place on a queue.</param>
+        /// <param name="queueName">The queue to place the message on. `null` signifies the default queue should be used.</param>
+        /// <returns>Task</returns>
+        public static Task PublishBatch(this IEnumerable<ICallableMessagingBase> callables, string? queueName = null)
         {
-            if (QueueProvider == null) throw new Exception("QueueProvider is null; Invoke CallableMessaging.Init() before use.");
-
             var messages = callables.Select(Serialization.SerializeCallable);
-            return QueueProvider.EnqueueBulk(messages, queueName);
+            return CallableMessaging.GetQueueProvider().EnqueueBulk(messages, queueName);
         }
     }
 }

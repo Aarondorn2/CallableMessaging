@@ -3,12 +3,27 @@ using System.Threading.Tasks;
 
 namespace Noogadev.CallableMessaging.QueueProviders
 {
+    /// <summary>
+    /// This interface defines the methods needed to implement a queue provider.
+    /// A default AWS SQS implementation is provided (<see cref="AwsQueueProvider"/>) and additional implementations
+    /// can be used by implementing this interface
+    /// </summary>
     public interface IQueueProvider
     {
-        public string? DefaultQueueName { get; set; }
-
-        public void Init(string? defaultQueueName);
+        /// <summary>
+        /// Add a message to a queue for immediate consumption.
+        /// </summary>
+        /// <param name="messageBody">The body of the message.</param>
+        /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <returns>Task</returns>
         public Task Enqueue(string messageBody, string? queueName);
+
+        /// <summary>
+        /// Add one or more messages to a queue for immediate consumption.
+        /// </summary>
+        /// <param name="messageBodies">The bodies of each message.</param>
+        /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <returns>Task</returns>
         public Task EnqueueBulk(IEnumerable<string> messageBodies, string? queueName);
     }
 }

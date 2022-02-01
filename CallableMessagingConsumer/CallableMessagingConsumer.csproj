@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AWSProjectType>Lambda</AWSProjectType>
@@ -22,5 +22,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CallableMessaging\CallableMessaging.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+      <None Update="appsettings.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
   </ItemGroup>
 </Project>
