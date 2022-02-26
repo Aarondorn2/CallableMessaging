@@ -16,7 +16,7 @@ namespace Noogadev.CallableMessaging
         public static Task Publish(this ICallableMessagingBase callable, string? queueName = null)
         {
             var serialized = Serialization.SerializeCallable(callable);
-            return CallableMessaging.GetQueueProvider().Enqueue(queueName!, serialized);
+            return CallableMessaging.GetQueueProvider().Enqueue(serialized, queueName);
         }
 
         /// <summary>

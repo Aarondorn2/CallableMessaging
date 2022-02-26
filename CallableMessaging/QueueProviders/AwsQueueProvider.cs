@@ -37,7 +37,7 @@ namespace Noogadev.CallableMessaging.QueueProviders
         /// <param name="messageAttributes">A dictionary of attributes/metadata to associate to the message.</param>
         /// <returns>Task</returns>
         /// <exception cref="Exception">Throws if a queue url is not provided and a default is not configured or if the delay is outside of boundaries.</exception>
-        public Task Enqueue(string messageBody, string? queueUrl = null, int delaySeconds = 0, Dictionary<string, string>? messageAttributes = null)
+        public async Task Enqueue(string messageBody, string? queueUrl = null, int delaySeconds = 0, Dictionary<string, string>? messageAttributes = null)
         {
             queueUrl ??= DefaultQueueName;
             if (queueUrl == null) throw new Exception("DefaultQueueUrl is null; Please configure before use.");
@@ -54,7 +54,7 @@ namespace Noogadev.CallableMessaging.QueueProviders
             };
 
             using var client = new AmazonSQSClient();
-            return client.SendMessageAsync(message);
+            await client.SendMessageAsync(message);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Noogadev.CallableMessaging.QueueProviders
         /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that the initialized default queue URL should be used.</param>
         /// <returns>Task</returns>
         /// <exception cref="Exception">Throws if a queue url is not provided and a default is not configured.</exception>
-        public Task EnqueueBulk(IEnumerable<string> messageBodies, string? queueUrl = null)
+        public async Task EnqueueBulk(IEnumerable<string> messageBodies, string? queueUrl = null)
         {
             queueUrl ??= DefaultQueueName;
             if (queueUrl == null) throw new Exception("DefaultQueueUrl is null; Please configure before use.");
@@ -77,7 +77,7 @@ namespace Noogadev.CallableMessaging.QueueProviders
                 .ToList();
 
             using var client = new AmazonSQSClient();
-            return client.SendMessageBatchAsync(queueUrl, messages);
+            await client.SendMessageBatchAsync(queueUrl, messages);
         }
     }
 }

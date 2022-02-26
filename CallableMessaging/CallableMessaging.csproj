@@ -8,14 +8,17 @@
     <RootNamespace>Noogadev.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 
     <PackageId>CallableMessaging</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Aaron Heidorn, Eric Polino</Authors>
-    <PackageTags>message;messaging;queue;sqs</PackageTags>
-    <PackageDescription>
-        CallableMessaging is a pattern for generic messaging where the message (instead of a queue/consumer) defines its own processing.
-        This pattern allows for simplified messaging architecture and rapid development of asynchronous processing. It includes a default
-        implementation for use with AWS SQS, but can be extended to support other queue providers.
-    </PackageDescription>
+    <PackageTags>message;messaging;queue;queuing;sqs</PackageTags>
+    <Title>CallableMessaging</Title>
+    <Description>
+        CallableMessaging is a pattern for generic messaging where the message (instead of a queue/consumer) defines its own processing. This pattern allows for simplified messaging architecture and rapid development of asynchronous processing. It includes a default implementation for use with AWS SQS, but can be extended to support other queue providers.
+    </Description>
+    <RepositoryUrl>https://github.com/Aarondorn2/CallableMessaging</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright © Aaron Heidorn 2022</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
