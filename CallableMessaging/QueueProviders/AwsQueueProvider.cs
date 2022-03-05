@@ -49,7 +49,7 @@ namespace Noogadev.CallableMessaging.QueueProviders
                 MessageBody = messageBody,
                 QueueUrl = queueUrl,
                 MessageAttributes = messageAttributes?
-                    .ToDictionary(x => x.Key, x => new MessageAttributeValue { StringValue = x.Value })
+                    .ToDictionary(x => x.Key, x => new MessageAttributeValue { StringValue = x.Value, DataType = "String" })
                     ?? new()
             };
 

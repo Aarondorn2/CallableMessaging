@@ -54,7 +54,7 @@ namespace Noogadev.CallableMessagingConsumer
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError("Failed to consume callable message", e);
+                    _logger.LogError(e, "Failed to consume callable message");
 
                     // if we can't deserialize the message, there is no point in retrying
                     if (e is SerializationException)
@@ -102,12 +102,12 @@ namespace Noogadev.CallableMessagingConsumer
         /// <returns>Task</returns>
         private async Task RetryOrDlq(SQSEvent.SQSMessage message)
         {
-            const string retryKey = "retryCount";
+            const string retryKey = "callable-retry-count";
 
             var retryCount = 0;
-            if (message.Attributes.TryGetValue(retryKey, out var retry))
+            if (message.MessageAttributes.TryGetValue(retryKey, out var attribute) && attribute != null)
             {
-                int.TryParse(retry, out retryCount);
+                int.TryParse(attribute.StringValue, out retryCount);
             }
 
             if (retryCount >= RetryIntervals.Length)
