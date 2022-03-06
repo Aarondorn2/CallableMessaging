@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Noogadev.CallableMessaging.QueueProviders
@@ -25,5 +26,14 @@ namespace Noogadev.CallableMessaging.QueueProviders
         /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
         /// <returns>Task</returns>
         public Task EnqueueBulk(IEnumerable<string> messageBodies, string? queueName);
+
+        /// <summary>
+        /// Add a message to a queue for consumption after a specified timespan.
+        /// </summary>
+        /// <param name="messageBody">The body of the message.</param>
+        /// <param name="delay">The delay to wait prior to delivering the message.</param>
+        /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <returns>Task</returns>
+        public Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueName);
     }
 }

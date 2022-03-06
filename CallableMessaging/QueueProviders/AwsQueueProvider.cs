@@ -29,6 +29,16 @@ namespace Noogadev.CallableMessaging.QueueProviders
         public Task Enqueue(string messageBody, string? queueUrl = null) => Enqueue(messageBody, queueUrl, 0);
 
         /// <summary>
+        /// Add a message to a queue for consumption after a specified timespan.
+        /// </summary>
+        /// <param name="messageBody">The body of the message.</param>
+        /// <param name="delay">The delay to wait prior to delivering the message.</param>
+        /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that the initialized default queue URL should be used.</param>
+        /// <returns>Task</returns>
+        /// <exception cref="Exception">Throws if a queue url is not provided and a default is not configured.</exception>
+        public Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueUrl) => Enqueue(messageBody, queueUrl, (int)delay.TotalSeconds);
+
+        /// <summary>
         /// Add a message to a queue with an optional delay and optional attributes.
         /// </summary>
         /// <param name="messageBody">The body of the message.</param>
