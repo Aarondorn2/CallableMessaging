@@ -17,7 +17,10 @@
     "function-name"        : "CallableMessaging",
     "function-description" : "",
     "package-type"         : "Zip",
+    "function-role"        : "arn:aws:iam::424896047657:role/lambda_exec_JiraGithubAutomation",
     "function-architecture" : "x86_64",
+    "function-subnets"      : "subnet-0c91c792fb5b294b0,subnet-0cfd10f3cfd4127d5",
+    "function-security-groups" : "sg-071f5afec79b904e8",
     "tracing-mode"             : "PassThrough",
     "environment-variables"    : "",
     "image-tag"                : ""

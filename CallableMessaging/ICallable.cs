@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace Noogadev.CallableMessaging
@@ -24,5 +25,18 @@ namespace Noogadev.CallableMessaging
     public interface ILoggingCallable : ICallableMessagingBase
     {
         public Task CallAsync(ILogger logger);
+    }
+
+    /// <summary>
+    /// Used to process generic logic in a synchronous fashion
+    /// Only one ISynchronousCallable can process at a time for each key
+    /// Order of message delivery / processing is not garunteed
+    /// </summary>
+    public interface ISynchronousCallable : ICallable {
+        /// <summary>
+        /// A key that groups messages together. If a group of messages need to run synchronously with each other,
+        /// they should have the same TypeKey
+        /// </summary>
+        public string TypeKey { get; set; }
     }
 }

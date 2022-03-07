@@ -1,3 +1,5 @@
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 using Amazon.SQS;
@@ -50,14 +52,14 @@ namespace Noogadev.CallableMessagingConsumer
             {
                 try
                 {
-                    await Consumer.Consume(message.Body, _logger);
+                    await Consumer.Consume(message.Body, _logger, (TrySetLock, ReleaseLock));
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Failed to consume callable message");
 
                     // if we can't deserialize the message, there is no point in retrying
-                    if (e is SerializationException)
+                    if (e is SerializationException || !e.CanRetry())
                     {
                         await Dlq(message);
                         return;
@@ -67,6 +69,56 @@ namespace Noogadev.CallableMessagingConsumer
                     await RetryOrDlq(message);
                 }
             }
+        }
+
+        const string LockTableName = "callable-exclusive-lock";
+        const string LockTableKeyName = "key";
+        /// <summary>
+        /// In order to use this method, dynamo must be configured with a table and key (named above) and
+        /// preferably with an expiration policy looking for an attribute named `expires-at`.
+        /// This method attempts to place a lock on a given key by placing the key in DynamoDB.
+        /// This is used to only allow one thing of a given group (grouped by key) to process at a time.
+        /// </summary>
+        /// <param name="key">the key of the lock to place</param>
+        /// <returns>bool - whether a lock was obtained</returns>
+        private async Task<bool> TrySetLock(string key)
+        {
+            var client = new AmazonDynamoDBClient();
+            var put = new PutItemRequest
+            {
+                TableName = LockTableName,
+                Item = new() {
+                    { LockTableKeyName, new() { S = key } },
+                    { "expires-at", new() { N = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds().ToString() } }
+                },
+                ConditionExpression = "attribute_not_exists(#key)",
+                ExpressionAttributeNames = new() { { "#key", LockTableKeyName } }
+            };
+
+            try
+            {
+                // if the item saves successfully (with the conditional), then I have a lock.
+                await client.PutItemAsync(put);
+                return true;
+            }
+            catch (ConditionalCheckFailedException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Used to release a lock stored in a DynamoDB table
+        /// </summary>
+        /// <param name="key">The key of the lock to release</param>
+        private async Task ReleaseLock(string key)
+        {
+            try
+            {
+                var client = new AmazonDynamoDBClient();
+                await client.DeleteItemAsync(LockTableName, new() { { LockTableKeyName, new() { S = key } } });
+            }
+            catch { } // if we fail here, the table should have a TTL to eventually remove the lock
         }
 
         /// <summary>
@@ -183,6 +235,38 @@ namespace Noogadev.CallableMessagingConsumer
 
                 return Task.CompletedTask;
             }
+        }
+    }
+
+    /// <summary>
+    /// This class facilitates an exception being thrown from a callable message without the framework attempting
+    /// to retry the failed message. It is recommended that you move this class to a lower-level package so that
+    /// the <see cref="WithNoRetry"/> extension can be referenced by other projects.
+    /// </summary>
+    public static class CallableMessagingConsumerExtensions
+    {
+        public const string NoRetryKey = "callable-no-retry";
+
+        /// <summary>
+        /// Calling this on a thrown exception prevents CallableMessages from attempting to retry the message.
+        /// A common use-case for this is when properties in a message are not correctly set.
+        /// </summary>
+        /// <param name="e">The Exception that is being thrown</param>
+        /// <returns>Excpetion - the original exceptions (allows call chaining)</returns>
+        public static Exception WithNoRetry(this Exception e)
+        {
+            e.Data.Add(NoRetryKey, true);
+            return e;
+        }
+
+        /// <summary>
+        /// This method checks to see if an Exception can be retried.
+        /// </summary>
+        /// <param name="e">The exception to check</param>
+        /// <returns>bool - whether or not the exception can be retried</returns>
+        public static bool CanRetry(this Exception e)
+        {
+            return !e.Data.Contains(NoRetryKey) || !bool.TryParse(e.Data[NoRetryKey]?.ToString(), out var val) || !val;
         }
     }
 }

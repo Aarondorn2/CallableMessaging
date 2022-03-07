@@ -12,31 +12,57 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         /// <param name="serializedCallable">The serialized callable message to be invoked.</param>
         /// <param name="logger">An optional logger for use with <see cref="ILoggingCallable"/> messages.</param>
+        /// <param name="lockMethods">
+        ///     Optional lock functions that accept a string 'key' and attempts to secure/release an exclusive lock.
+        ///     The trySetLock function should specify whether the given key was able to obtain an exclusive lock for synchronous processing.
+        ///     The releaseLock function should release the exclusive lock placed by trySetLock
+        ///     These functions are required to process <see cref="ISynchronousCallable"/> messages.
+        /// </param>
         /// <returns>Task</returns>
         /// <exception cref="SerializationException">Thrown if the provided serializedCallable is not actually a callable message type.</exception>
-        /// <exception cref="Exception">Thrown if provided an unknown callable type or a logger is not provided for an <see cref="ILoggingCallable"/> message.</exception>
-        public static async Task Consume(string serializedCallable, ILogger? logger = null)
+        /// <exception cref="Exception">Thrown if provided an unknown callable type or a consume parameter is not provided for a message type that requires it.</exception>
+        public static async Task Consume(
+            string serializedCallable,
+            ILogger? logger = null,
+            (Func<string, Task<bool>> trySetLock, Func<string, Task> releaseLock)? lockMethods = null
+        )
         {
             logger?.LogInformation($"Consuming: {serializedCallable}");
             var deserialized = Serialization.DeserializeCallable(serializedCallable);
             if (deserialized == null) throw new SerializationException($"Cannot deserialize string as an Callable: {serializedCallable}");
 
-            if (deserialized is ICallable callable)
+            string? lockKey = null;
+            if (deserialized is ISynchronousCallable syncCallable)
+            {
+                if (lockMethods == null) throw new Exception("Must pass a canLock function to `Consume` in order to process SynchronousCallable messages");
+
+                lockKey = $"{syncCallable.GetType()}+{syncCallable.TypeKey}";
+                if (!await lockMethods.Value.trySetLock(lockKey))
+                {
+                    // if we can't get an exclusive lock, something else is processing a message with the same key; retry after 1 second
+                    await syncCallable.Publish(TimeSpan.FromSeconds(1));
+                    return;
+                }
+            }
+
+            if (deserialized is ILoggingCallable loggingCallable)
+            {
+                if (logger == null) throw new Exception("Must pass a logger to `Consume` in order to process LoggingCallable messages");
+                logger.LogInformation($"Calling: {loggingCallable.GetType()}");
+                await loggingCallable.CallAsync(logger);
+            }
+            else if (deserialized is ICallable callable)
             {
                 logger?.LogInformation($"Calling: {callable.GetType()}");
                 await callable.CallAsync();
-            }
-            else if (deserialized is ILoggingCallable lambdaCallable)
-            {
-                if (logger == null) throw new Exception("Must pass a logger to `Consume` in order to process LambdaCallable messages");
-                logger.LogInformation($"Calling: {lambdaCallable.GetType()}");
-                await lambdaCallable.CallAsync(logger);
             }
             else
             {
                 logger?.LogError($"Unknown Callable Type: {deserialized.GetType()}");
                 throw new Exception($"The callable type {deserialized.GetType()} cannot be processed by the consumer");
             }
+
+            if (lockKey != null) await lockMethods!.Value.releaseLock(lockKey);
         }
     }
 }
