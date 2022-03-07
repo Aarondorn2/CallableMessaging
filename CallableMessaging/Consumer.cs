@@ -32,37 +32,42 @@ namespace Noogadev.CallableMessaging
             if (deserialized == null) throw new SerializationException($"Cannot deserialize string as an Callable: {serializedCallable}");
 
             string? lockKey = null;
-            if (deserialized is ISynchronousCallable syncCallable)
+            try
             {
-                if (lockMethods == null) throw new Exception("Must pass a canLock function to `Consume` in order to process SynchronousCallable messages");
-
-                lockKey = $"{syncCallable.GetType()}+{syncCallable.TypeKey}";
-                if (!await lockMethods.Value.trySetLock(lockKey))
+                if (deserialized is ISynchronousCallable syncCallable)
                 {
-                    // if we can't get an exclusive lock, something else is processing a message with the same key; retry after 1 second
-                    await syncCallable.Publish(TimeSpan.FromSeconds(1));
-                    return;
+                    if (lockMethods == null) throw new Exception("Must pass a canLock function to `Consume` in order to process SynchronousCallable messages");
+
+                    lockKey = $"{syncCallable.GetType()}+{syncCallable.TypeKey}";
+                    if (!await lockMethods.Value.trySetLock(lockKey))
+                    {
+                        // if we can't get an exclusive lock, something else is processing a message with the same key; retry after 1 second
+                        await syncCallable.Publish(TimeSpan.FromSeconds(1));
+                        return;
+                    }
+                }
+
+                if (deserialized is ILoggingCallable loggingCallable)
+                {
+                    if (logger == null) throw new Exception("Must pass a logger to `Consume` in order to process LoggingCallable messages");
+                    logger.LogInformation($"Calling: {loggingCallable.GetType()}");
+                    await loggingCallable.CallAsync(logger);
+                }
+                else if (deserialized is ICallable callable)
+                {
+                    logger?.LogInformation($"Calling: {callable.GetType()}");
+                    await callable.CallAsync();
+                }
+                else
+                {
+                    logger?.LogError($"Unknown Callable Type: {deserialized.GetType()}");
+                    throw new Exception($"The callable type {deserialized.GetType()} cannot be processed by the consumer");
                 }
             }
-
-            if (deserialized is ILoggingCallable loggingCallable)
+            finally
             {
-                if (logger == null) throw new Exception("Must pass a logger to `Consume` in order to process LoggingCallable messages");
-                logger.LogInformation($"Calling: {loggingCallable.GetType()}");
-                await loggingCallable.CallAsync(logger);
-            }
-            else if (deserialized is ICallable callable)
-            {
-                logger?.LogInformation($"Calling: {callable.GetType()}");
-                await callable.CallAsync();
-            }
-            else
-            {
-                logger?.LogError($"Unknown Callable Type: {deserialized.GetType()}");
-                throw new Exception($"The callable type {deserialized.GetType()} cannot be processed by the consumer");
-            }
-
-            if (lockKey != null) await lockMethods!.Value.releaseLock(lockKey);
+                if (lockKey != null) await lockMethods!.Value.releaseLock(lockKey);
+            }            
         }
     }
 }

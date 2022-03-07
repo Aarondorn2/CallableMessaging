@@ -89,7 +89,9 @@ namespace Noogadev.CallableMessagingConsumer
                 TableName = LockTableName,
                 Item = new() {
                     { LockTableKeyName, new() { S = key } },
-                    { "expires-at", new() { N = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds().ToString() } }
+                    // add an expiration in case something goes wrong and we didn't release our lock
+                    // 15 minutes is the max execution time of a lambda
+                    { "expires-at", new() { N = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds().ToString() } }
                 },
                 ConditionExpression = "attribute_not_exists(#key)",
                 ExpressionAttributeNames = new() { { "#key", LockTableKeyName } }

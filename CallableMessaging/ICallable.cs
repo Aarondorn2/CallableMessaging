@@ -31,8 +31,11 @@ namespace Noogadev.CallableMessaging
     /// Used to process generic logic in a synchronous fashion
     /// Only one ISynchronousCallable can process at a time for each key
     /// Order of message delivery / processing is not garunteed
+    /// 
+    /// An ISynchronousCallable must also implement either ICallable or ILoggingCallable to process correctly
     /// </summary>
-    public interface ISynchronousCallable : ICallable {
+    public interface ISynchronousCallable : ICallableMessagingBase
+    {
         /// <summary>
         /// A key that groups messages together. If a group of messages need to run synchronously with each other,
         /// they should have the same TypeKey
