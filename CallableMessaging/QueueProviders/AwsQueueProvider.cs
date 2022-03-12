@@ -82,12 +82,23 @@ namespace Noogadev.CallableMessaging.QueueProviders
             var messages = messageBodies
                 .Select(x => new SendMessageBatchRequestEntry
                 {
+                    // Id is a required field and is used for reporting results / exceptions from `SendMessageBatchAsync`
+                    Id = Guid.NewGuid().ToString(),
                     MessageBody = x
-                })
-                .ToList();
+                });
 
             using var client = new AmazonSQSClient();
-            await client.SendMessageBatchAsync(queueUrl, messages);
+
+            // `SendMessageBatchAsync` only allows 10 messages per batch
+            const int maxBatchSize = 10;
+            var groups = Enumerable
+                .Range(0, (int)Math.Ceiling((double)messages.Count() / maxBatchSize))
+                .Select(i => messages.Skip(i * maxBatchSize).Take(maxBatchSize));
+
+            foreach (var group in groups)
+            {
+                await client.SendMessageBatchAsync(queueUrl, group.ToList());
+            }
         }
     }
 }
