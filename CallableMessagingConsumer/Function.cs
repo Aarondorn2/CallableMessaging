@@ -62,7 +62,7 @@ namespace Noogadev.CallableMessagingConsumer
                     if (e is SerializationException || !e.CanRetry())
                     {
                         await Dlq(message);
-                        return;
+                        continue;
                     }
 
                     // if this throws, the message will follow the queue's current Redrive Policy
