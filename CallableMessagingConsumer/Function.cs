@@ -36,7 +36,7 @@ namespace Noogadev.CallableMessagingConsumer
             services.AddLogging(x => x.AddLambdaLogger(configuration, "Logger"));
 
             var provider = services.BuildServiceProvider();
-            _logger = (ILogger)provider.GetService(typeof(ILogger<>).MakeGenericType(new[] { this.GetType() }));
+            _logger = (ILogger)provider.GetService(typeof(ILogger<>).MakeGenericType(new[] { GetType() }));
         }
 
         /// <summary>
@@ -50,6 +50,7 @@ namespace Noogadev.CallableMessagingConsumer
         {
             foreach(var message in evnt.Records)
             {
+                using var __ = _logger.BeginScope($"Callable {message.MessageId}");
                 try
                 {
                     await Consumer.Consume(message.Body, _logger, (TrySetLock, ReleaseLock));

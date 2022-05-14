@@ -34,6 +34,13 @@ namespace Noogadev.CallableMessaging
             string? lockKey = null;
             try
             {
+                var repeatedCallable = deserialized as IRepeatedCallable;
+                if (repeatedCallable != null && repeatedCallable.CurrentCall >= repeatedCallable.MaxCalls)
+                {
+                    // we should not be putting a PollingCallable on the queue if it's already reached MaxTries
+                    throw new Exception("PollingCallable exceeds MaxTries");
+                }
+
                 if (deserialized is ISynchronousCallable syncCallable)
                 {
                     if (lockMethods == null) throw new Exception("Must pass a canLock function to `Consume` in order to process SynchronousCallable messages");
@@ -60,9 +67,26 @@ namespace Noogadev.CallableMessaging
                 }
                 else
                 {
-                    logger?.LogError($"Unknown Callable Type: {deserialized.GetType()}");
-                    throw new Exception($"The callable type {deserialized.GetType()} cannot be processed by the consumer");
+                    logger?.LogError($"Callable Type: {deserialized.GetType()} does not have an implementation for `CallAsync()`");
+                    throw new Exception($"The callable type {deserialized.GetType()} cannot be invoked by the consumer");
                 }
+
+                if (repeatedCallable?.ShouldContinueCalling == true)
+                {
+                    repeatedCallable.CurrentCall = (repeatedCallable.CurrentCall ?? 0) + 1;
+
+                    if (repeatedCallable.CurrentCall >= repeatedCallable.MaxCalls)
+                    {
+                        await repeatedCallable.ReachedMaxCalls(logger);
+                    }
+                    else
+                    {
+                        logger?.LogInformation($"Polling Callable retrying after {repeatedCallable.TimeBetweenCalls.TotalSeconds} seconds");
+                        await repeatedCallable.Publish(repeatedCallable.TimeBetweenCalls);
+                    }
+                }
+
+                logger?.LogInformation($"Completed: {serializedCallable}");
             }
             finally
             {

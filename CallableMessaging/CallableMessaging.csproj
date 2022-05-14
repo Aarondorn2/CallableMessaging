@@ -8,7 +8,7 @@
     <RootNamespace>Noogadev.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 
     <PackageId>CallableMessaging</PackageId>
-    <Version>0.3.2</Version>
+    <Version>0.4.2</Version>
     <Authors>Aaron Heidorn, Eric Polino</Authors>
     <PackageTags>message;messaging;queue;queuing;sqs</PackageTags>
     <Title>CallableMessaging</Title>
