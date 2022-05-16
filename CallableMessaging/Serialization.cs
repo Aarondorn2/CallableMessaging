@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Noogadev.CallableMessaging
 {
-    internal class Serialization
+    public class Serialization
     {
         public const string Delimiter = "::";
         public static readonly JsonSerializerOptions SerializerOptions = new ()
