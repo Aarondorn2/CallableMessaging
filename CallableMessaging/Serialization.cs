@@ -5,8 +5,8 @@ namespace Noogadev.CallableMessaging
 {
     internal class Serialization
     {
-        private const string Delimiter = "::";
-        private static readonly JsonSerializerOptions SerializerOptions = new ()
+        public const string Delimiter = "::";
+        public static readonly JsonSerializerOptions SerializerOptions = new ()
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
