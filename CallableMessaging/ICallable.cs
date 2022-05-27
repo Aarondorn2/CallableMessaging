@@ -82,9 +82,10 @@ namespace Noogadev.CallableMessaging
         public bool ShouldContinueCalling { get; set; }
 
         /// <summary>
-        /// Called once the message has been repeated <see cref="MaxCalls"/> number of times.
+        /// Called once the message has been repeated <see cref="MaxCalls"/> number of times or <see cref="ShouldContinueCalling"/> is set to false.
         /// </summary>
+        /// <param name="reachedMaxCalls">Specifies how this message reached this method. True when <see cref="MaxCalls"/> is reached or false when <see cref="ShouldContinueCalling"/> is used.</param>
         /// <param name="logger">An optional logger that may be provided if the consumer uses a logger.</param>
-        public Task ReachedMaxCalls(ILogger? logger);
+        public Task CompletedCall(bool reachedMaxCalls, ILogger? logger);
     }
 }

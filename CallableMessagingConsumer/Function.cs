@@ -217,7 +217,11 @@ namespace Noogadev.CallableMessagingConsumer
             if (string.IsNullOrWhiteSpace(attribute)) return null;
 
             var attributeDictionary = JsonSerializer.Deserialize<Dictionary<string, object>?>(attribute);
-            var dlqArn = (attributeDictionary?.TryGetValue("deadLetterTargetArn", out var val) == true) ? val?.ToString() : null;
+            var dlqArn = attributeDictionary is null
+                ? null
+                : attributeDictionary.TryGetValue("deadLetterTargetArn", out var val)
+                ? val?.ToString()
+                : null;
             if (string.IsNullOrWhiteSpace(dlqArn)) return null;
 
             return GetQueueUrl(dlqArn);

@@ -37,8 +37,8 @@ namespace Noogadev.CallableMessaging
                 var repeatedCallable = deserialized as IRepeatedCallable;
                 if (repeatedCallable != null && repeatedCallable.CurrentCall >= repeatedCallable.MaxCalls)
                 {
-                    // we should not be putting a PollingCallable on the queue if it's already reached MaxTries
-                    throw new Exception("PollingCallable exceeds MaxTries");
+                    // we should not be putting a RepeatedCallable on the queue if it's already reached MaxTries
+                    throw new Exception("RepeatedCallable exceeds MaxTries");
                 }
 
                 if (deserialized is ISynchronousCallable syncCallable)
@@ -77,13 +77,21 @@ namespace Noogadev.CallableMessaging
 
                     if (repeatedCallable.CurrentCall >= repeatedCallable.MaxCalls)
                     {
-                        await repeatedCallable.ReachedMaxCalls(logger);
+                        // We reached the max number of times this message can be repeated,
+                        // so call CompletedCall with reachedMaxCall set to true
+                        await repeatedCallable.CompletedCall(true, logger);
                     }
                     else
                     {
                         logger?.LogInformation($"Polling Callable retrying after {repeatedCallable.TimeBetweenCalls.TotalSeconds} seconds");
                         await repeatedCallable.Publish(repeatedCallable.TimeBetweenCalls);
                     }
+                }
+                else if (repeatedCallable?.ShouldContinueCalling == false)
+                {
+                    // We reached the completed state for this message,
+                    // so call CompletedCall with reachedMaxCall set to false
+                    await repeatedCallable.CompletedCall(false, logger);
                 }
 
                 logger?.LogInformation($"Completed: {serializedCallable}");
