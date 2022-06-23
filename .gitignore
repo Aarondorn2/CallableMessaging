@@ -446,3 +446,6 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+CallableMessagingConsumer/appsettings.json
+CallableMessagingConsumer/aws-lambda-tools-defaults.json

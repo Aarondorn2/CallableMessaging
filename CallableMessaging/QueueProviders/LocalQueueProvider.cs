@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Noogadev.CallableMessaging.ConsumerContext;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace Noogadev.CallableMessaging.QueueProviders
 
         public async Task Enqueue(string messageBody, string? queueName)
         {
-            await Consumer.Consume(messageBody, _logger, (TrySetLock, ReleaseLock));
+            await Consumer.Consume(messageBody, queueName, new LocalConsumerContext(_logger, null));
         }
 
         public async Task EnqueueBulk(IEnumerable<string> messageBodies, string? queueName)
