@@ -9,10 +9,10 @@ namespace Noogadev.CallableMessaging.QueueProviders
 {
     /// <summary>
     /// This class is an implementation of <see cref="IQueueProvider"/> that uses AWS SQS for message queues.
-    /// It faciliates placing messages on an SQS queue one at a time or in bulk. Additionally, it allows for
+    /// It facilitates placing messages on an SQS queue one at a time or in bulk. Additionally, it allows for
     /// delayed message delivery and optional message attributes.
     /// A default queue URL can be configured with the `Init` function and/or a queueUrl can be provided when
-    /// queueing a message.
+    /// queuing a message.
     /// </summary>
     public class AwsQueueProvider : IQueueProvider
     {
@@ -32,11 +32,11 @@ namespace Noogadev.CallableMessaging.QueueProviders
         /// Add a message to a queue for consumption after a specified timespan.
         /// </summary>
         /// <param name="messageBody">The body of the message.</param>
-        /// <param name="delay">The delay to wait prior to delivering the message.</param>
+        /// <param name="delay">The delay to wait prior to delivering the message. Rounded up to the nearest second.</param>
         /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that the initialized default queue URL should be used.</param>
         /// <returns>Task</returns>
         /// <exception cref="Exception">Throws if a queue url is not provided and a default is not configured.</exception>
-        public Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueUrl) => Enqueue(messageBody, queueUrl, (int)delay.TotalSeconds);
+        public Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueUrl) => Enqueue(messageBody, queueUrl, (int)Math.Ceiling(delay.TotalSeconds));
 
         /// <summary>
         /// Add a message to a queue with an optional delay and optional attributes.

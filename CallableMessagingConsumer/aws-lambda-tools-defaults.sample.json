@@ -7,7 +7,7 @@
         "All the command line options for the Lambda command can be specified in this file."
     ],
     "profile"     : "default",
-    "region"      : "us-east-2",
+    "region"      : "<region>",
     "configuration" : "Release",
     "framework"     : "netcoreapp3.1",
     "function-runtime" : "dotnetcore3.1",
@@ -17,10 +17,10 @@
     "function-name"        : "CallableMessaging",
     "function-description" : "",
     "package-type"         : "Zip",
-    "function-role"        : "arn:aws:iam::424896047657:role/lambda_exec_JiraGithubAutomation",
+    "function-role"        : "arn:aws:iam::<account>:role/<roleName>",
     "function-architecture" : "x86_64",
-    "function-subnets"      : "subnet-0c91c792fb5b294b0,subnet-0cfd10f3cfd4127d5",
-    "function-security-groups" : "sg-071f5afec79b904e8",
+    "function-subnets"      : "<subnets>",
+    "function-security-groups" : "<securityGroup>",
     "tracing-mode"             : "PassThrough",
     "environment-variables"    : "",
     "image-tag"                : ""
