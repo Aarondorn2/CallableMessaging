@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace Noogadev.CallableMessaging.QueueProviders
 {
     /// <summary>
-    /// This provider facilitates running CallableMessages locally without a queueing solution.
-    /// This will run messages in serial and will not provide most of the benefits of queueing,
+    /// This provider facilitates running CallableMessages locally without a queuing solution.
+    /// This will run messages in serial and will not provide most of the benefits of queuing,
     /// but will be useful when attempting to debug messages during development.
     /// </summary>
     public class LocalQueueProvider : IQueueProvider

@@ -73,7 +73,7 @@ namespace Noogadev.CallableMessagingConsumer.ConsumerContext
                 return nextRun;
             }
 
-            // we added our own lock and are alowed to execute now
+            // we added our own lock and are allowed to execute now
             _logger.LogDebug($"Within rate limit - consuming callable. typeKey: {typeKey}, limitPerPeriod: {limitPerPeriod}, limitPeriod: {limitPeriod}");
             return null;
         }

@@ -9,10 +9,10 @@ namespace Noogadev.CallableMessaging.QueueProviders
 {
     /// <summary>
     /// This class is an implementation of <see cref="IQueueProvider"/> that uses AWS SQS for message queues.
-    /// It faciliates placing messages on an SQS queue one at a time or in bulk. Additionally, it allows for
+    /// It facilitates placing messages on an SQS queue one at a time or in bulk. Additionally, it allows for
     /// delayed message delivery and optional message attributes.
     /// A default queue URL can be configured with the `Init` function and/or a queueUrl can be provided when
-    /// queueing a message.
+    /// queuing a message.
     /// </summary>
     public class AwsQueueProvider : IQueueProvider
     {

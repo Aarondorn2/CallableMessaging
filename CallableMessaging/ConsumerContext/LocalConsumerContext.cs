@@ -7,7 +7,7 @@ namespace Noogadev.CallableMessaging.ConsumerContext
 {
     /// <summary>
     /// This implementation of <see cref="IConsumerContext"/> provides functionality
-    /// for running specialized callabel messages locally. Note: all messages will run
+    /// for running specialized callable messages locally. Note: all messages will run
     /// synchronously and immediately, so functions like "debounce" and "rate limit"
     /// simply consume each message immediately.
     /// </summary>

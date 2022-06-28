@@ -21,7 +21,7 @@ must be resolvable by the Consumer, and in order for it to be placed on the queu
 ## Usage
 
 This library should be imported through Nuget to an application that is used to consume messages from a queue. It should also be imported
-to any application that needs to place messages on a queue. For applications that are queueing messages, the `CallableMessage.Init()` method
+to any application that needs to place messages on a queue. For applications that are queuing messages, the `CallableMessage.Init()` method
 should be called with an IQueueProvider implementation before any messages are placed on a queue. The `Init()` method also allows an optional
 `IDebounceCallableContext` implementation, which is only required if using `IDebounceCallable` message types.
 
@@ -46,7 +46,7 @@ can invoke the correct `CallAsync()` logic. So both the producer and the consume
 The IQueueProvider interface is intended to allow for custom implementations of Queue Providers, such as RabbitMQ or AWS SQS. An AwsQueueProvider
 is included in the project to demonstrate an integration with AWS SQS. A LocalQueueProvider is also provided as a means to execute callable messages
 locally (without using a queue). The LocalQueueProvider is a convenience option - it runs all messages synchronously and ignores message type-specific
-processing such as IDebounceCallable and IRateLimitCallable functionality; As such, the LocalQueueProvider may serve to quicky test primary functionality,
+processing such as IDebounceCallable and IRateLimitCallable functionality; As such, the LocalQueueProvider may serve to quickly test primary functionality,
 but does not represent a true end-to-end test scenario.
 
 You can integrate this project with any queue provider by simply implementing the IQueueProvider interface and providing your own implementation when

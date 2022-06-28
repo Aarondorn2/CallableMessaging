@@ -26,7 +26,7 @@ namespace Noogadev.CallableMessagingConsumer.Services
     }
 
     /// <summary>
-    /// This class faciliatates interactions with DynamoDB for ICallable messages.
+    /// This class facilitates interactions with DynamoDB for ICallable messages.
     /// For initial setup instructions, see the Readme in this project.
     /// </summary>
     public class DynamoDbService : IDynamoDbService

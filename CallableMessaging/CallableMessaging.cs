@@ -4,7 +4,7 @@ using System;
 namespace Noogadev.CallableMessaging
 {
     /// <summary>
-    /// This class is used as a central point for statically intializing/configuring the CallableMessaging library.
+    /// This class is used as a central point for statically initializing/configuring the CallableMessaging library.
     /// </summary>
     public static class CallableMessaging
     {

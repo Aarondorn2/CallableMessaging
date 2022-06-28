@@ -72,7 +72,7 @@ namespace Noogadev.CallableMessaging
         /// 
         /// This function is invoked in the consume method in the finally block (after all other
         /// processing). It should be used to run any custom logic that needs to execute after
-        /// al other consuming logic.
+        /// all other consuming logic.
         /// </summary>
         /// <param name="callable">The callable that is being processed.</param>
         /// <param name="queueName">The name of the queue that is processing the callable.</param>
@@ -82,16 +82,16 @@ namespace Noogadev.CallableMessaging
 
     /// <summary>
     /// This context interface facilitates the methods needed to implement <see cref="IConcurrentCallable"/> messages.
-    /// The implementations of this interface should use a synchronized datastore (such as a database or distributed 
+    /// The implementations of this interface should use a synchronized data store (such as a database or distributed 
     /// cache) to keep track of how many messages of a given type are being executed over a given time period. 
     /// </summary>
     public interface IConcurrentCallableContext
     {
         /// <summary>
-        /// Attempt to get an exlcusive (or shared) lock for a given typeKey. The concurrencyLimit should control
+        /// Attempt to get an exclusive (or shared) lock for a given typeKey. The concurrencyLimit should control
         /// how many shared locks can be active at one time.
         /// 
-        /// Best practice: locks should self-expire after a given timeframe (for instance, Lambda invoactions are limited to
+        /// Best practice: locks should self-expire after a given time frame (for instance, Lambda invocations are limited to
         /// 15 minutes by default, a sensible self-expiration for locks in this case would be 15 minutes. This will prevent 
         /// locks from remaining due to errors in processing)
         /// </summary>
@@ -99,7 +99,7 @@ namespace Noogadev.CallableMessaging
         /// <param name="concurrencyLimit">How many messages can run concurrently</param>
         /// <returns>
         ///     bool didLock - whether a lock could be set or not. Should be `false` if the concurrrencyLimit was reached
-        ///     string instanceKey - a unique key specific to the individual lock record added to the datastore. Used to
+        ///     string instanceKey - a unique key specific to the individual lock record added to the data store. Used to
         ///         release the lock.
         /// </returns>
         public Task<(bool didLock, string? instanceKey)> TrySetLock(string typeKey, int concurrencyLimit);
@@ -115,7 +115,7 @@ namespace Noogadev.CallableMessaging
 
     /// <summary>
     /// This context interface facilitates the methods needed to implement <see cref="IDebounceCallable"/> messages.
-    /// The implementations of this interface should use a synchronized datastore (such as a database or distributed 
+    /// The implementations of this interface should use a synchronized data store (such as a database or distributed 
     /// cache) to keep track of the most recent massage and dismiss messages that have been debounced. 
     /// </summary>
     public interface IDebounceCallableContext
@@ -125,8 +125,8 @@ namespace Noogadev.CallableMessaging
         /// typeKey. This record represents a "debounce pointer" that will be referenced after the debounce interval
         /// has elapsed.
         /// 
-        /// Best practice: references should self-expire after a given timeframe (suggested 2x the debounceInterval and
-        /// the timeframe should be reset each time the instanceKey changes. This will prevent references from remaining
+        /// Best practice: references should self-expire after a given time frame (suggested 2x the debounceInterval and
+        /// the time frame should be reset each time the instanceKey changes. This will prevent references from remaining
         /// due to errors in processing)
         /// </summary>
         /// <param name="typeKey">The type of debounce message - used to group messages that debounce off each other</param>
@@ -142,7 +142,7 @@ namespace Noogadev.CallableMessaging
         /// should remove the record and return `true` so the message can execute.
         /// 
         /// Best practice: if a record does not exist for the given typeKey, then something went wrong. It is recommended
-        /// that you return `true` from this method and add a record to the datastore for this typeKey/instanceKey with
+        /// that you return `true` from this method and add a record to the data store for this typeKey/instanceKey with
         /// an expiration of 2x the debounceInterval. This will prevent any backed-up messages from all executing due to 
         /// returning true.
         /// </summary>
@@ -155,9 +155,9 @@ namespace Noogadev.CallableMessaging
 
     /// <summary>
     /// This context interface facilitates the methods needed to implement <see cref="IRateLimitCallable"/> messages.
-    /// The implementations of this interface should use a synchronized datastore (such as a database or distributed 
+    /// The implementations of this interface should use a synchronized data store (such as a database or distributed 
     /// cache) to keep track of how many messages of a given type have been executed and over what time period. This
-    /// datastore should be used by the <see cref="GetNextAvailableRunTime(string, int, TimeSpan)"/> method to determine
+    /// data store should be used by the <see cref="GetNextAvailableRunTime(string, int, TimeSpan)"/> method to determine
     /// if a given message can be invoked or if it needs to be delayed due to reaching the rate limit.
     /// </summary>
     public interface IRateLimitCallableContext
@@ -165,9 +165,9 @@ namespace Noogadev.CallableMessaging
         /// <summary>
         /// This method gets the next available run time. If the limitPerPeriod has been exceeded, then this method 
         /// should return the next time a message can be run. If the limitPerPeriod has not yet been exceeded, this
-        /// method should add this current run to the datastore and return `null`.
+        /// method should add this current run to the data store and return `null`.
         /// 
-        /// Best practice: datastore records should self-expire after a given timeframe (suggested 1x the limitPeriod.
+        /// Best practice: data store records should self-expire after a given time frame (suggested 1x the limitPeriod.
         /// This will prevent records from remaining due to errors in processing)
         /// 
         /// </summary>

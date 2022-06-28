@@ -86,7 +86,7 @@ namespace Noogadev.CallableMessaging
 
     /// <summary>
     /// This is a custom Exception that is thrown by the CallableMessaging library when a message cannot
-    /// be deserialized. It can be expicitly caught to log and take action on messages that cannot be
+    /// be deserialized. It can be explicitly caught to log and take action on messages that cannot be
     /// processed by a consumer.
     /// </summary>
     public class SerializationException : Exception

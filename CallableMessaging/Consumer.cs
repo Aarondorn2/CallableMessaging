@@ -12,7 +12,7 @@ namespace Noogadev.CallableMessaging
         /// It should be passed a serialized callable message that will then be deserialized and invoked.
         /// </summary>
         /// <param name="serializedCallable">The serialized callable message to be invoked.</param>
-        /// <param name="queueName">The name of the queue processing the message. Used for re-queueing messages when rate limited, etc.</param>
+        /// <param name="queueName">The name of the queue processing the message. Used for re-queuing messages when rate limited, etc.</param>
         /// <param name="context">An optional <see cref="IConsumerContext"/> object holding methods required to process specific Callable types.</param>
         /// <returns>Task</returns>
         /// <exception cref="SerializationException">Thrown if the provided serializedCallable is not actually a callable message type.</exception>
@@ -118,7 +118,7 @@ namespace Noogadev.CallableMessaging
 
                 if (repeatedCallable?.RepeatedShouldContinueCalling == true)
                 {
-                    logger?.LogDebug("Postprocessing as repeated callable.");
+                    logger?.LogDebug("Post-processing as repeated callable.");
                     repeatedCallable.RepeatedCurrentCall = (repeatedCallable.RepeatedCurrentCall ?? 0) + 1;
 
                     if (repeatedCallable.RepeatedCurrentCall >= repeatedCallable.RepeatedMaxCalls())

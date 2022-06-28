@@ -216,7 +216,7 @@ namespace Noogadev.CallableMessagingConsumer
         /// A common use-case for this is when properties in a message are not correctly set.
         /// </summary>
         /// <param name="e">The Exception that is being thrown</param>
-        /// <returns>Excpetion - the original exceptions (allows call chaining)</returns>
+        /// <returns>Exception - the original exceptions (allows call chaining)</returns>
         public static Exception WithNoRetry(this Exception e)
         {
             e.Data.Add(NoRetryKey, true);

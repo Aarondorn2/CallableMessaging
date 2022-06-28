@@ -68,7 +68,7 @@ namespace Noogadev.CallableMessaging
     public interface IDebounceCallable : ICallable
     {
         /// <summary>
-        /// A key to differenciate this message from others of the same <see cref="DebounceTypeKey"/>.
+        /// A key to differentiate this message from others of the same <see cref="DebounceTypeKey"/>.
         /// This does not need to be explicitly set and will be overwritten to Guid.NewGuid().ToString().
         /// </summary>
         public string? DebounceInstanceKey { get; set; }
@@ -88,12 +88,12 @@ namespace Noogadev.CallableMessaging
     }
 
     /// <summary>
-    /// Used to limit the numebr of invocations that occur over a given time period.
+    /// Used to limit the number of invocations that occur over a given time period.
     /// For instance, a <see cref="RateLimitPerPeriod"/> of 10 with a <see cref="RateLimitPeriod"/>
     /// of 60 minutes means that the given Callable can be invoked 10 times over an hour before
     /// being invoked again.
     /// 
-    /// <see cref="RateLimitPeriod"/> represents a "rolling timeframe".
+    /// <see cref="RateLimitPeriod"/> represents a "rolling time frame".
     /// </summary>
     public interface IRateLimitCallable : ICallable
     {
@@ -133,7 +133,7 @@ namespace Noogadev.CallableMessaging
     /// <see cref="RepeatedShouldContinueCalling"/> is set to false, whichever comes first.
     /// 
     /// This function can be used sparingly to repeat a task that should happen at an interval (not a good approach to
-    /// handle cron jobs that should indefinately be executed on a schedule). This can also be used to implement a 
+    /// handle cron jobs that should indefinitely be executed on a schedule). This can also be used to implement a 
     /// polling pattern.
     /// </summary>
     public interface IRepeatedCallable : ICallable
@@ -154,7 +154,7 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         public int RepeatedMaxCalls();
         /// <summary>
-        /// The amount of time that shouls pass between repetitions of this message.
+        /// The amount of time that should pass between repetitions of this message.
         /// </summary>
         public TimeSpan RepeatedTimeBetweenCalls();
 
