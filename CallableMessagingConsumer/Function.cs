@@ -1,5 +1,4 @@
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 using Amazon.SQS;
@@ -7,6 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Noogadev.CallableMessaging;
+using Noogadev.CallableMessaging.QueueProviders;
+using Noogadev.CallableMessagingConsumer.ConsumerContext;
+using Noogadev.CallableMessagingConsumer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,16 +17,19 @@ using System.Threading.Tasks;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
-
 namespace Noogadev.CallableMessagingConsumer
 {
     public class Function
     {
         private readonly ILogger _logger;
+        private readonly IServiceProvider _serviceProvider;
+
         /// <summary>
         /// Default constructor. This constructor is used by Lambda to construct the instance. When invoked in a Lambda environment
         /// the AWS credentials will come from the IAM role associated with the function and the AWS region will be set to the
         /// region the Lambda function is executed in.
+        /// 
+        /// We need to set up our DI container with logging, AWS resources, services, and callable contexts.
         /// </summary>
         public Function() {
             var configuration = new ConfigurationBuilder()
@@ -33,10 +38,21 @@ namespace Noogadev.CallableMessagingConsumer
                 .Build();
 
             var services = new ServiceCollection();
-            services.AddLogging(x => x.AddLambdaLogger(configuration, "Logger"));
+            services
+                .AddLogging(x => x.AddLambdaLogger(configuration, "Logger"))
+                .AddAWSService<IAmazonDynamoDB>(configuration.GetAWSOptions("DynamoDB"))
+                .AddSingleton<IDynamoDbService, DynamoDbService>()
+                .AddSingleton<ITestService, TestService>()
+                .AddSingleton<IConcurrentCallableContext, ConcurrentCallableContext>()
+                .AddSingleton<IDebounceCallableContext, DebounceCallableContext>()
+                .AddSingleton<IRateLimitCallableContext, RateLimitCallableContext>();
 
-            var provider = services.BuildServiceProvider();
-            _logger = (ILogger)provider.GetService(typeof(ILogger<>).MakeGenericType(new[] { GetType() }));
+            _serviceProvider = services.BuildServiceProvider();
+            _logger = _serviceProvider.GetService<ILogger<Function>>()!;
+
+            var debounceContext = _serviceProvider.GetService<IDebounceCallableContext>();
+            var queueProvider = new AwsQueueProvider(configuration.GetValue<string>("QueueUrl"));
+            CallableMessaging.CallableMessaging.Init(queueProvider, debounceContext);
         }
 
         /// <summary>
@@ -44,103 +60,61 @@ namespace Noogadev.CallableMessagingConsumer
         /// to respond to SQS messages.
         /// </summary>
         /// <param name="evnt">the SQS event including a batch of messages to process.</param>
-        /// <param name="context">The lambda context (unused in this implementation)</param>
+        /// <param name="_">The lambda context (unused in this implementation).</param>
         /// <returns>Task</returns>
         public async Task FunctionHandler(SQSEvent evnt, ILambdaContext _)
         {
-            foreach(var message in evnt.Records)
+            foreach (var message in evnt.Records)
             {
-                using var __ = _logger.BeginScope($"Callable {message.MessageId}");
                 try
                 {
-                    await Consumer.Consume(message.Body, _logger, (TrySetLock, ReleaseLock));
+                    using var __ = _logger.BeginScope($"Callable {message.MessageId}");
+                    var currentQueueUrl = GetQueueUrl(message.EventSourceArn);
+
+                    try
+                    {
+                        var consumerContext = new DefaultConsumerContext(_logger, _serviceProvider);
+                        await Consumer.Consume(message.Body, currentQueueUrl, consumerContext);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, $"Failed to consume callable message. {e.Message}");
+
+                        // if we can't deserialize the message, there is no point in retrying
+                        if (e is SerializationException || !e.CanRetry())
+                        {
+                            await Dlq(message, currentQueueUrl);
+                            continue;
+                        }
+
+                        // if this throws, the message will follow the queue's current Redrive Policy
+                        await RetryOrDlq(message, currentQueueUrl);
+                    }
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Failed to consume callable message");
-
-                    // if we can't deserialize the message, there is no point in retrying
-                    if (e is SerializationException || !e.CanRetry())
-                    {
-                        await Dlq(message);
-                        continue;
-                    }
-
-                    // if this throws, the message will follow the queue's current Redrive Policy
-                    await RetryOrDlq(message);
+                    _logger.LogError(e, $"An unhandled exception occurred while consuming message: {e.Message}");
                 }
             }
-        }
-
-        const string LockTableName = "callable-exclusive-lock";
-        const string LockTableKeyName = "key";
-        /// <summary>
-        /// In order to use this method, dynamo must be configured with a table and key (named above) and
-        /// preferably with an expiration policy looking for an attribute named `expires-at`.
-        /// This method attempts to place a lock on a given key by placing the key in DynamoDB.
-        /// This is used to only allow one thing of a given group (grouped by key) to process at a time.
-        /// </summary>
-        /// <param name="key">the key of the lock to place</param>
-        /// <returns>bool - whether a lock was obtained</returns>
-        private async Task<bool> TrySetLock(string key)
-        {
-            var client = new AmazonDynamoDBClient();
-            var put = new PutItemRequest
-            {
-                TableName = LockTableName,
-                Item = new() {
-                    { LockTableKeyName, new() { S = key } },
-                    // add an expiration in case something goes wrong and we didn't release our lock
-                    // 15 minutes is the max execution time of a lambda
-                    { "expires-at", new() { N = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds().ToString() } }
-                },
-                ConditionExpression = "attribute_not_exists(#key)",
-                ExpressionAttributeNames = new() { { "#key", LockTableKeyName } }
-            };
-
-            try
-            {
-                // if the item saves successfully (with the conditional), then I have a lock.
-                await client.PutItemAsync(put);
-                return true;
-            }
-            catch (ConditionalCheckFailedException)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Used to release a lock stored in a DynamoDB table
-        /// </summary>
-        /// <param name="key">The key of the lock to release</param>
-        private async Task ReleaseLock(string key)
-        {
-            try
-            {
-                var client = new AmazonDynamoDBClient();
-                await client.DeleteItemAsync(LockTableName, new() { { LockTableKeyName, new() { S = key } } });
-            }
-            catch { } // if we fail here, the table should have a TTL to eventually remove the lock
         }
 
         /// <summary>
         /// Send the message to a Dead Letter Queue if one is defined for the SQS queue that invokes this lambda.
         /// </summary>
         /// <param name="message">The SQSMessage to place on the DLQ.</param>
+        /// <param name="currentQueueUrl">The URL of the queue that the message is being processed from.</param>
         /// <returns>Task</returns>
-        private async Task Dlq(SQSEvent.SQSMessage message)
+        private async Task Dlq(SQSEvent.SQSMessage message, string currentQueueUrl)
         {
-            var currentQueue = GetQueueUrl(message.EventSourceArn);
-            var dlq = await GetDlqUrl(currentQueue);
+            var dlq = await GetDlqUrl(currentQueueUrl);
             if (dlq == null)
             {
-                _logger.LogError($"No DLQ configured for {currentQueue}");
+                _logger.LogError($"No DLQ configured for {currentQueueUrl}");
                 return;
             }
 
             // using queue provider directly since we already have a serialized callable
-            var provider = new CallableMessaging.QueueProviders.AwsQueueProvider(dlq);
+            var provider = new AwsQueueProvider(dlq);
             await provider.Enqueue(message.Body, dlq);
         }
 
@@ -154,8 +128,9 @@ namespace Noogadev.CallableMessagingConsumer
         /// to a Dead Letter Queue (if one is configured for the SQS queue that invokes this lambda)
         /// </summary>
         /// <param name="message">The SQSMessage to retry or send to the DLQ.</param>
+        /// <param name="currentQueueUrl">The URL of the queue that the message is being processed from.</param>
         /// <returns>Task</returns>
-        private async Task RetryOrDlq(SQSEvent.SQSMessage message)
+        private async Task RetryOrDlq(SQSEvent.SQSMessage message, string currentQueueUrl)
         {
             const string retryKey = "callable-retry-count";
 
@@ -168,7 +143,7 @@ namespace Noogadev.CallableMessagingConsumer
             if (retryCount >= RetryIntervals.Length)
             {
                 _logger.LogInformation($"Message has been retried {retryCount} time(s); Transferring to DLQ.");
-                await Dlq(message);
+                await Dlq(message, currentQueueUrl);
                 return;
             }
 
@@ -176,11 +151,10 @@ namespace Noogadev.CallableMessagingConsumer
             _logger.LogInformation($"Message has been retried {retryCount} time(s); Delaying {interval} seconds and then trying message again.");
 
             // requeue the message with a delay
-            var currentQueue = GetQueueUrl(message.EventSourceArn);
             var messageAttributes = new Dictionary<string, string> { { retryKey, (retryCount + 1).ToString() } };
 
             // using queue provider directly since we already have a serialized callable
-            var provider = new CallableMessaging.QueueProviders.AwsQueueProvider(currentQueue);
+            var provider = new AwsQueueProvider(currentQueueUrl);
             await provider.Enqueue(message.Body, delaySeconds: interval, messageAttributes: messageAttributes);
         }
 
@@ -226,23 +200,6 @@ namespace Noogadev.CallableMessagingConsumer
 
             return GetQueueUrl(dlqArn);
         }
-
-        /// <summary>
-        /// This class is provided as a means to test this lambda by placing a message directly on a queue associated to this Lambda.
-        /// The message on the queue should contain the following serialized Callable Message:
-        /// Noogadev.CallableMessagingConsumer.Function+TestConsumer, CallableMessagingConsumer::{\"message\":\"hi mom\"}
-        /// </summary>
-        public class TestConsumer : ILoggingCallable
-        {
-            public string? Message { get; set; }
-
-            public Task CallAsync(ILogger logger)
-            {
-                logger.LogInformation(Message);
-
-                return Task.CompletedTask;
-            }
-        }
     }
 
     /// <summary>
@@ -259,7 +216,7 @@ namespace Noogadev.CallableMessagingConsumer
         /// A common use-case for this is when properties in a message are not correctly set.
         /// </summary>
         /// <param name="e">The Exception that is being thrown</param>
-        /// <returns>Excpetion - the original exceptions (allows call chaining)</returns>
+        /// <returns>Exception - the original exceptions (allows call chaining)</returns>
         public static Exception WithNoRetry(this Exception e)
         {
             e.Data.Add(NoRetryKey, true);
