@@ -106,6 +106,13 @@ namespace Noogadev.CallableMessaging
         /// The period over which to limit invocations.
         /// </summary>
         public TimeSpan RateLimitPeriod();
+
+        /// <summary>
+        /// A key that groups messages together. If a group of messages need to be limited together,
+        /// they should have the same TypeKey. If an empty key is given, the ICallable message type
+        /// is used to group messages.
+        /// </summary>
+        public string RateLimitTypeKey() => string.Empty;
     }
 
     /// <summary>

@@ -47,6 +47,7 @@ namespace Noogadev.CallableMessagingConsumer.Tests
 
         public TimeSpan RateLimitPeriod() => TimeSpan.FromSeconds(10);
         public int RateLimitPerPeriod() => 3;
+        public string RateLimitTypeKey() => "hi mom";
 
         public ILogger? Logger { get; set; } // set by Callable framework
     }
