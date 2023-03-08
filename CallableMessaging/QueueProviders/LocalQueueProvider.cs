@@ -20,23 +20,23 @@ namespace Noogadev.CallableMessaging.QueueProviders
 
         private readonly ILogger? _logger;
 
-        public async Task Enqueue(string messageBody, string? queueName)
+        public async Task Enqueue(string messageBody, string? queueName, Dictionary<string, string>? messageMetadata = null)
         {
-            await Consumer.Consume(messageBody, queueName, new LocalConsumerContext(_logger, null));
+            await Consumer.Consume(messageBody, queueName, messageMetadata, new LocalConsumerContext(_logger, null));
         }
 
         public async Task EnqueueBulk(IEnumerable<string> messageBodies, string? queueName)
         {
             foreach (var messageBody in messageBodies)
             {
-                await Enqueue(messageBody, queueName);
+                await Enqueue(messageBody, queueName, null);
             }
         }
 
-        public async Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueName)
+        public async Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueName, Dictionary<string, string>? messageMetadata = null)
         {
             await Task.Delay(delay);
-            await Enqueue(messageBody, queueName);
+            await Enqueue(messageBody, queueName, messageMetadata);
         }
 
         private Task<bool> TrySetLock(string key) => Task.FromResult(true);

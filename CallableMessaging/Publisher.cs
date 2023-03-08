@@ -15,7 +15,7 @@ namespace Noogadev.CallableMessaging
         /// <param name="delay">The delay to wait prior to delivering the message. `null` signifies immediate delivery.</param>
         /// <param name="queueName">The queue to place the message on. `null` signifies the default queue should be used.</param>
         /// <returns>Task</returns>
-        public static async Task Publish(this ICallable callable, TimeSpan? delay = null, string? queueName = null)
+        public static async Task Publish(this ICallable callable, TimeSpan? delay = null, string? queueName = null, Dictionary<string, string>? messageMetadata = null)
         {
             if (callable is IDebounceCallable debounceCallable)
             {
@@ -34,11 +34,11 @@ namespace Noogadev.CallableMessaging
 
             if (delay == null)
             {
-                await CallableMessaging.GetQueueProvider().Enqueue(serialized, queueName);
+                await CallableMessaging.GetQueueProvider().Enqueue(serialized, queueName, messageMetadata);
             }
             else
             {
-                await CallableMessaging.GetQueueProvider().EnqueueDelayed(serialized, delay.Value, queueName);
+                await CallableMessaging.GetQueueProvider().EnqueueDelayed(serialized, delay.Value, queueName, messageMetadata);
             }
         }
 
