@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,11 +16,11 @@ namespace Noogadev.CallableMessaging
         };
 
         /// <summary>
-        /// Serializes a Callable Message to a string that includes the messages type.
+        /// Serializes a Callable Message to a string that includes the message's type.
         /// </summary>
         /// <param name="callable">The Callable Message to serialize.</param>
         /// <returns>string - the serialized message.</returns>
-        internal static string SerializeCallable(ICallable callable)
+        public static string SerializeCallable(ICallable callable)
         {
             var type = callable.GetType();
             var serialized = JsonSerializer.Serialize(callable, type, SerializerOptions);
@@ -34,7 +34,7 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         /// <param name="serializedCallable">The serialized message to deserialize into a Callable.</param>
         /// <returns>ICallableMessagingBase - the deserialized Callable Message.</returns>
-        internal static ICallable? DeserializeCallable(string serializedCallable)
+        public static ICallable? DeserializeCallable(string serializedCallable)
         {
             try
             {
@@ -63,7 +63,7 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         /// <param name="type">The Type to serialize.</param>
         /// <returns>string - The serialized Type.</returns>
-        internal static string GetFullSerializedType(Type type)
+        public static string GetFullSerializedType(Type type)
             => $"{type}, {type.Assembly.GetName().Name}";
     }
 

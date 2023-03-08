@@ -1,4 +1,4 @@
-﻿using Noogadev.CallableMessaging.QueueProviders;
+using Noogadev.CallableMessaging.QueueProviders;
 using System;
 
 namespace Noogadev.CallableMessaging
@@ -12,7 +12,14 @@ namespace Noogadev.CallableMessaging
         /// The <see cref="IQueueProvider"/> that will be used by the CallableMessaging library.
         /// </summary>
         private static IQueueProvider? QueueProvider { get; set; }
-        internal static IQueueProvider GetQueueProvider()
+
+        /// <summary>
+        /// A utility method to retrieve the currently configured <see cref="IQueueProvider"/> in use by the
+        /// CallableMessaging library. This may be used to extend CallableMessaging functionality in your project.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static IQueueProvider GetQueueProvider()
         {
             if (QueueProvider == null) throw new Exception("QueueProvider is null; Invoke `CallableMessaging.Init()` before use.");
             return QueueProvider;
@@ -23,7 +30,15 @@ namespace Noogadev.CallableMessaging
         /// <see cref="IDebounceCallable"/> messages.
         /// </summary>
         private static IDebounceCallableContext? DebounceContext { get; set; }
-        internal static IDebounceCallableContext GetDebounceContext()
+
+
+        /// <summary>
+        /// A utility method to retrieve the currently configured <see cref="IDebounceCallableContext"/> in use by the
+        /// CallableMessaging library. This may be used to extend CallableMessaging functionality in your project.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static IDebounceCallableContext GetDebounceContext()
         {
             if (DebounceContext == null)
             {

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -80,7 +80,7 @@ namespace Noogadev.CallableMessaging
 
                     logger?.LogDebug("Processing as rate limit callable.");
                     var nextRun = await context.GetRateLimitCallableContext().GetNextAvailableRunTime(
-                        messageTypeName.Value,
+                        $"{messageTypeName.Value}+{limitCallable.RateLimitTypeKey()}",
                         limitCallable.RateLimitPerPeriod(),
                         limitCallable.RateLimitPeriod());
 
