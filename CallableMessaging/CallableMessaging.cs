@@ -1,4 +1,4 @@
-﻿using Noogadev.CallableMessaging.QueueProviders;
+using Noogadev.CallableMessaging.QueueProviders;
 using System;
 
 namespace Noogadev.CallableMessaging
