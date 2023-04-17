@@ -50,7 +50,8 @@ namespace Noogadev.CallableMessaging
 
                     if (!didRemove)
                     {
-                        logger?.LogInformation("DebounceCallable did not remove own reference. Another message of the same type was " +
+                        logger?.LogInformation(
+                            "DebounceCallable did not remove own reference. Another message of the same type was " +
                             "added prior to the debounce period elapsing and this message has been debounced.");
                         return;
                     }
@@ -64,7 +65,9 @@ namespace Noogadev.CallableMessaging
                     var concurrentCallableContext = context.GetConcurrentCallableContext();
 
                     concurrentTypeKey = $"{messageTypeName.Value}+{concurrentCallable.ConcurrentTypeKey()}";
-                    var (didLock, instanceKey) = await concurrentCallableContext.TrySetLock(concurrentTypeKey, concurrentCallable.ConcurrencyCount());
+                    var (didLock, instanceKey) =
+                        await concurrentCallableContext.TrySetLock(concurrentTypeKey,
+                            concurrentCallable.ConcurrencyCount());
                     concurrentInstanceKey = instanceKey;
 
                     if (!didLock)
@@ -91,13 +94,14 @@ namespace Noogadev.CallableMessaging
                         await limitCallable.Publish(nextRun, queueName, messageMetadata);
                         return;
                     }
-                }    
+                }
 
                 if (deserialized is ILoggingCallable loggingCallable)
                 {
                     if (logger == null)
                     {
-                        throw new NotImplementedException("Must provide a logger in IConsumerContext to process LoggingCallable messages");
+                        throw new NotImplementedException(
+                            "Must provide a logger in IConsumerContext to process LoggingCallable messages");
                     }
 
                     logger.LogDebug("Processing as logging callable.");
@@ -130,8 +134,10 @@ namespace Noogadev.CallableMessaging
                     }
                     else
                     {
-                        logger?.LogInformation($"Polling Callable retrying after {repeatedCallable.RepeatedTimeBetweenCalls().TotalSeconds} seconds");
-                        await repeatedCallable.Publish(repeatedCallable.RepeatedTimeBetweenCalls(), queueName, messageMetadata);
+                        logger?.LogInformation(
+                            $"Polling Callable retrying after {repeatedCallable.RepeatedTimeBetweenCalls().TotalSeconds} seconds");
+                        await repeatedCallable.Publish(repeatedCallable.RepeatedTimeBetweenCalls(), queueName,
+                            messageMetadata);
                     }
                 }
                 else if (repeatedCallable?.RepeatedShouldContinueCalling == false)
@@ -142,6 +148,19 @@ namespace Noogadev.CallableMessaging
                 }
 
                 logger?.LogInformation($"Completed: {serializedCallable}");
+            }
+            catch
+            {
+                try
+                {
+                    await deserialized.OnErrorAsync();
+                }
+                catch (Exception e)
+                {
+                    logger?.LogError(e, "Exception thrown from Callable's OnError function.");
+                }
+                
+                throw;
             }
             finally
             {

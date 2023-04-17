@@ -13,6 +13,18 @@ namespace Noogadev.CallableMessaging
         /// Called when the message is consumed.
         /// </summary>
         public Task CallAsync();
+
+        /// <summary>
+        /// Called when an error occurs while consuming the message.
+        /// Default noop implementation so that this only needs to be
+        /// implemented if desired.
+        ///
+        /// Note: this will not execute if the message fails serialization. 
+        /// </summary>
+        public Task OnErrorAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 
     /// <summary>
