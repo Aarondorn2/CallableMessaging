@@ -15,15 +15,16 @@ namespace Noogadev.CallableMessaging.QueueProviders
         /// Add a message to a queue for immediate consumption.
         /// </summary>
         /// <param name="messageBody">The body of the message.</param>
-        /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <param name="queueName">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <param name="messageMetadata">Optional metadata or headers associated with the message.</param>
         /// <returns>Task</returns>
-        public Task Enqueue(string messageBody, string? queueName);
+        public Task Enqueue(string messageBody, string? queueName, Dictionary<string, string>? messageMetadata);
 
         /// <summary>
         /// Add one or more messages to a queue for immediate consumption.
         /// </summary>
         /// <param name="messageBodies">The bodies of each message.</param>
-        /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <param name="queueName">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
         /// <returns>Task</returns>
         public Task EnqueueBulk(IEnumerable<string> messageBodies, string? queueName);
 
@@ -32,8 +33,9 @@ namespace Noogadev.CallableMessaging.QueueProviders
         /// </summary>
         /// <param name="messageBody">The body of the message.</param>
         /// <param name="delay">The delay to wait prior to delivering the message.</param>
-        /// <param name="queueUrl">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <param name="queueName">The URL of the queue to place the message on. `null` implies that a default queue should be used.</param>
+        /// <param name="messageMetadata">Optional metadata or headers associated with the message.</param>
         /// <returns>Task</returns>
-        public Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueName);
+        public Task EnqueueDelayed(string messageBody, TimeSpan delay, string? queueName, Dictionary<string, string>? messageMetadata);
     }
 }

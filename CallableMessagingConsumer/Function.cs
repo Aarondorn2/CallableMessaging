@@ -74,7 +74,7 @@ namespace Noogadev.CallableMessagingConsumer
                     try
                     {
                         var consumerContext = new DefaultConsumerContext(_logger, _serviceProvider);
-                        await Consumer.Consume(message.Body, currentQueueUrl, consumerContext);
+                        await Consumer.Consume(message.Body, currentQueueUrl, message.Attributes, consumerContext);
                     }
                     catch (Exception e)
                     {
@@ -115,7 +115,7 @@ namespace Noogadev.CallableMessagingConsumer
 
             // using queue provider directly since we already have a serialized callable
             var provider = new AwsQueueProvider(dlq);
-            await provider.Enqueue(message.Body, dlq);
+            await provider.Enqueue(message.Body, dlq, message.Attributes);
         }
 
         /// <summary>

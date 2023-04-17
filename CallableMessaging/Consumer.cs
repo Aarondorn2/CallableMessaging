@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace Noogadev.CallableMessaging
         /// <exception cref="SerializationException">Thrown if the provided serializedCallable is not actually a callable message type.</exception>
         /// <exception cref="NotImplementedException">Thrown if provided an unknown callable or a known callable with an unimplemented context requirement.</exception>
         /// <exception cref="Exception"></exception>
-        public static async Task Consume(string serializedCallable, string? queueName, IConsumerContext? context = null)
+        public static async Task Consume(string serializedCallable, string? queueName, Dictionary<string, string>? messageMetadata, IConsumerContext? context = null)
         {
             context ??= new DefaultConsumerContext(null, null);
             var logger = context.GetLogger();
@@ -69,7 +70,7 @@ namespace Noogadev.CallableMessaging
                     if (!didLock)
                     {
                         // if we can't get an exclusive lock, something else is processing a message with the same key; retry after 1 second
-                        await concurrentCallable.Publish(TimeSpan.FromSeconds(1), queueName);
+                        await concurrentCallable.Publish(TimeSpan.FromSeconds(1), queueName, messageMetadata);
                         return;
                     }
                 }
@@ -87,7 +88,7 @@ namespace Noogadev.CallableMessaging
                     if (nextRun != null)
                     {
                         // since the method responded with a delay time, we cannot run yet; we'll need to put this message back on the queue.
-                        await limitCallable.Publish(nextRun, queueName);
+                        await limitCallable.Publish(nextRun, queueName, messageMetadata);
                         return;
                     }
                 }    
@@ -130,7 +131,7 @@ namespace Noogadev.CallableMessaging
                     else
                     {
                         logger?.LogInformation($"Polling Callable retrying after {repeatedCallable.RepeatedTimeBetweenCalls().TotalSeconds} seconds");
-                        await repeatedCallable.Publish(repeatedCallable.RepeatedTimeBetweenCalls(), queueName);
+                        await repeatedCallable.Publish(repeatedCallable.RepeatedTimeBetweenCalls(), queueName, messageMetadata);
                     }
                 }
                 else if (repeatedCallable?.RepeatedShouldContinueCalling == false)
