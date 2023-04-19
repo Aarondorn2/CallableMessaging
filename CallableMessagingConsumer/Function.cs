@@ -74,11 +74,13 @@ namespace Noogadev.CallableMessagingConsumer
                     try
                     {
                         var consumerContext = new DefaultConsumerContext(_logger, _serviceProvider);
-                        await Consumer.Consume(message.Body, currentQueueUrl, message.Attributes, consumerContext);
+                        var attributes = message.MessageAttributes.ToDictionary(x => x.Key, y => y.Value.StringValue);
+                        await Consumer.Consume(message.Body, currentQueueUrl, attributes, consumerContext);
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, $"Failed to consume callable message. {e.Message}");
+                        var unwrapped = e is CallableException ? e.InnerException ?? e : e;
+                        _logger.LogError(unwrapped, $"Failed to consume callable message. {unwrapped.Message}");
 
                         // if we can't deserialize the message, there is no point in retrying
                         if (e is SerializationException || !e.CanRetry())
@@ -88,7 +90,7 @@ namespace Noogadev.CallableMessagingConsumer
                         }
 
                         // if this throws, the message will follow the queue's current Redrive Policy
-                        await RetryOrDlq(message, currentQueueUrl);
+                        await RetryOrDlq(message, e, currentQueueUrl);
                     }
                 }
                 catch (Exception e)
@@ -130,7 +132,7 @@ namespace Noogadev.CallableMessagingConsumer
         /// <param name="message">The SQSMessage to retry or send to the DLQ.</param>
         /// <param name="currentQueueUrl">The URL of the queue that the message is being processed from.</param>
         /// <returns>Task</returns>
-        private async Task RetryOrDlq(SQSEvent.SQSMessage message, string currentQueueUrl)
+        private async Task RetryOrDlq(SQSEvent.SQSMessage message, Exception e, string currentQueueUrl)
         {
             const string retryKey = "callable-retry-count";
 
@@ -155,7 +157,8 @@ namespace Noogadev.CallableMessagingConsumer
 
             // using queue provider directly since we already have a serialized callable
             var provider = new AwsQueueProvider(currentQueueUrl);
-            await provider.Enqueue(message.Body, delaySeconds: interval, messageAttributes: messageAttributes);
+            var messageBody = e is CallableException ce ? ce.GetSerializedCallable() : message.Body;
+            await provider.Enqueue(messageBody, delaySeconds: interval, messageAttributes: messageAttributes);
         }
 
         /// <summary>
