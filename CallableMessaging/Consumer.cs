@@ -149,18 +149,20 @@ namespace Noogadev.CallableMessaging
 
                 logger?.LogInformation($"Completed: {serializedCallable}");
             }
-            catch
+            catch (Exception e)
             {
                 try
                 {
                     await deserialized.OnErrorAsync();
                 }
-                catch (Exception e)
+                catch (Exception e2)
                 {
-                    logger?.LogError(e, "Exception thrown from Callable's OnError function.");
+                    logger?.LogError(e2, "Exception thrown from Callable's OnError function.");
                 }
-                
-                throw;
+
+                const string exceptionMessage =
+                    "An Exception occured while consuming a callable. See InnerException for details.";
+                throw new CallableException(deserialized, exceptionMessage, e);
             }
             finally
             {
@@ -170,7 +172,7 @@ namespace Noogadev.CallableMessaging
                 }
 
                 await context.ConsumerFinalizeCall(deserialized, queueName);
-            }            
+            }
         }
     }
 }
