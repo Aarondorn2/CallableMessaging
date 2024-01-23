@@ -46,11 +46,5 @@ namespace Noogadev.CallableMessagingConsumer.Tests
         public int ConcurrencyCount() => Concurrency;
 
         public ILogger? Logger { get; set; } // set by Callable framework
-
-        Task ILoggingCallable.InitLogger(ILogger logger)
-        {
-	        Logger = logger;
-            return Task.CompletedTask;
-        }
     }
 }

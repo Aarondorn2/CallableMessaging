@@ -105,7 +105,12 @@ namespace Noogadev.CallableMessaging
                     }
 
                     logger.LogDebug("Processing as logging callable.");
+#if NETSTANDARD2_1_OR_GREATER
                     await loggingCallable.InitLogger(logger);
+#endif
+#if NETSTANDARD2_0
+                    loggingCallable.Logger = logger;
+#endif
                 }
 
                 if (deserialized is IDependencyCallable dependencyCallable)
@@ -151,14 +156,16 @@ namespace Noogadev.CallableMessaging
             }
             catch (Exception e)
             {
-                try
-                {
-                    await deserialized.OnErrorAsync();
-                }
-                catch (Exception e2)
-                {
-                    logger?.LogError(e2, "Exception thrown from Callable's OnError function.");
-                }
+#if NETSTANDARD2_1_OR_GREATER
+                    try
+                    {
+                        await deserialized.OnErrorAsync();
+                    }
+                    catch (Exception e2)
+                    {
+                        logger?.LogError(e2, "Exception thrown from Callable's OnError function.");
+                    }
+#endif
 
                 const string exceptionMessage =
                     "An Exception occured while consuming a callable. See InnerException for details.";
