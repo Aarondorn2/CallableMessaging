@@ -26,5 +26,5 @@ namespace Noogadev.CallableMessagingConsumer.Tests
 	        Logger = logger;
 	        return Task.CompletedTask;
         }
-	}
+    }
 }

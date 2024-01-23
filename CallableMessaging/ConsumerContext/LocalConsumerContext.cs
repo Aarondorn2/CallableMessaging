@@ -95,5 +95,5 @@ namespace Noogadev.CallableMessaging.ConsumerContext
         {
 	        return Task.CompletedTask;
         }
-	}
+    }
 }
