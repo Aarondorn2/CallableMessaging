@@ -14,6 +14,7 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         public Task CallAsync();
 
+#if NETSTANDARD2_1_OR_GREATER
         /// <summary>
         /// Called when an error occurs while consuming the message.
         /// Default noop implementation so that this only needs to be
@@ -21,10 +22,8 @@ namespace Noogadev.CallableMessaging
         ///
         /// Note: this will not execute if the message fails serialization. 
         /// </summary>
-        public Task OnErrorAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public Task OnErrorAsync() => Task.CompletedTask;
+#endif
     }
 
     /// <summary>
@@ -40,6 +39,7 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         public ILogger? Logger { get; set; }
 
+#if NETSTANDARD2_1_OR_GREATER
         /// <summary>
         /// A method for initializing the logger for a callable message.
         /// This method is invoked by the consumer.
@@ -47,7 +47,12 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         /// <param name="logger">The logger to initialize</param>
         /// <returns>Task</returns>
-        public Task InitLogger(ILogger logger);
+        public Task InitLogger(ILogger logger)
+        {
+            Logger = logger;
+            return Task.CompletedTask;
+        }
+#endif
     }
 
     /// <summary>
@@ -120,7 +125,12 @@ namespace Noogadev.CallableMessaging
         /// they should have the same TypeKey. If an empty key is given, the ICallable message type
         /// is used to group messages.
         /// </summary>
+#if NETSTANDARD2_1_OR_GREATER
+        public string RateLimitTypeKey() => string.Empty;
+#endif
+#if NETSTANDARD2_0
         public string RateLimitTypeKey();
+#endif
     }
 
     /// <summary>

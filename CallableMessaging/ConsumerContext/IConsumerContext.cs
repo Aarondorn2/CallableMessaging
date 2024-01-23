@@ -42,7 +42,7 @@ namespace Noogadev.CallableMessaging
 
         /// <summary>
         /// Used to provide a hook into the consume method for managing custom Callable types.
-        /// A default no-op return is implemented for convenience.
+        /// If this functionality is not needed, this method can be implemented as a no-op.
         /// 
         /// This function is invoked in the consume method immediately prior to `CallAsync()`.
         /// It should be used to run any custom logic that needs to execute prior to consuming
@@ -55,7 +55,7 @@ namespace Noogadev.CallableMessaging
 
         /// <summary>
         /// Used to provide a hook into the consume method for managing custom Callable types.
-        /// A default no-op return is implemented for convenience.
+        /// If this functionality is not needed, this method can be implemented as a no-op.
         /// 
         /// This function is invoked in the consume method immediately after `CallAsync()`.
         /// It should be used to run any custom logic that needs to execute after consuming
@@ -68,7 +68,7 @@ namespace Noogadev.CallableMessaging
 
         /// <summary>
         /// Used to provide a hook into the consume method for managing custom Callable types.
-        /// A default no-op return is implemented for convenience.
+        /// If this functionality is not needed, this method can be implemented as a no-op.
         /// 
         /// This function is invoked in the consume method in the finally block (after all other
         /// processing). It should be used to run any custom logic that needs to execute after
