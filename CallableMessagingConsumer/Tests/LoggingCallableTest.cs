@@ -20,5 +20,11 @@ namespace Noogadev.CallableMessagingConsumer.Tests
             Logger!.LogInformation(Message);
             return Task.CompletedTask;
         }
-    }
+
+        Task ILoggingCallable.InitLogger(ILogger logger)
+        {
+	        Logger = logger;
+	        return Task.CompletedTask;
+        }
+	}
 }

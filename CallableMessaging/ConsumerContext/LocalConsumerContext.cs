@@ -80,5 +80,20 @@ namespace Noogadev.CallableMessaging.ConsumerContext
                 return Task.FromResult((TimeSpan?)null);
             }
         }
-    }
+
+        public Task ConsumerFinalizeCall(ICallable callable, string? queueName)
+        {
+	        return Task.CompletedTask;
+        }
+
+        public Task ConsumerPostCall(ICallable callable, string? queueName)
+        {
+	        return Task.CompletedTask;
+        }
+
+        public Task ConsumerPreCall(ICallable callable, string? queueName)
+        {
+	        return Task.CompletedTask;
+        }
+	}
 }

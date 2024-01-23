@@ -38,7 +38,7 @@ namespace Noogadev.CallableMessaging
         {
             try
             {
-                var parts = serializedCallable.Split(Delimiter, 2);
+                var parts = serializedCallable.Split(new []{ Delimiter }, 2, StringSplitOptions.None);
                 if (parts.Length != 2) return null;
 
                 var type = Type.GetType(parts[0]);

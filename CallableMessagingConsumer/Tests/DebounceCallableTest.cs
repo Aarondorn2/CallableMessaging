@@ -46,5 +46,11 @@ namespace Noogadev.CallableMessagingConsumer.Tests
 
         public string? DebounceInstanceKey { get; set; } // set by Callable framework
         public ILogger? Logger { get; set; } // set by Callable framework
-    }
+
+        Task ILoggingCallable.InitLogger(ILogger logger)
+        {
+	        Logger = logger;
+	        return Task.CompletedTask;
+        }
+	}
 }
