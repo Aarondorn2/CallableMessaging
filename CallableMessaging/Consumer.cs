@@ -28,7 +28,7 @@ namespace Noogadev.CallableMessaging
             var deserialized = Serialization.DeserializeCallable(serializedCallable);
             if (deserialized == null) throw new SerializationException($"Cannot deserialize string as an ICallable: {serializedCallable}");
 
-            var messageTypeName = new Lazy<string>(Serialization.GetFullSerializedType(deserialized.GetType()));
+            var messageTypeName = new Lazy<string>(() => Serialization.GetFullSerializedType(deserialized.GetType()));
 
             string? concurrentTypeKey = null;
             string? concurrentInstanceKey = null;

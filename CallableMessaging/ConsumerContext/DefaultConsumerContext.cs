@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace Noogadev.CallableMessaging
 {
@@ -73,6 +74,21 @@ namespace Noogadev.CallableMessaging
             }
 
             return _rateLimitCallableContext;
+        }
+
+        public Task ConsumerFinalizeCall(ICallable callable, string? queueName)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task ConsumerPostCall(ICallable callable, string? queueName)
+        {
+	        return Task.CompletedTask;
+        }
+
+        public Task ConsumerPreCall(ICallable callable, string? queueName)
+        {
+	        return Task.CompletedTask;
         }
     }
 }

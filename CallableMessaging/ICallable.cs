@@ -47,11 +47,7 @@ namespace Noogadev.CallableMessaging
         /// </summary>
         /// <param name="logger">The logger to initialize</param>
         /// <returns>Task</returns>
-        public Task InitLogger(ILogger logger)
-        {
-            Logger = logger;
-            return Task.CompletedTask;
-        }
+        public Task InitLogger(ILogger logger);
     }
 
     /// <summary>
@@ -124,7 +120,7 @@ namespace Noogadev.CallableMessaging
         /// they should have the same TypeKey. If an empty key is given, the ICallable message type
         /// is used to group messages.
         /// </summary>
-        public string RateLimitTypeKey() => string.Empty;
+        public string RateLimitTypeKey();
     }
 
     /// <summary>

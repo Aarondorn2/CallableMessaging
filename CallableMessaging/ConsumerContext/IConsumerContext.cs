@@ -51,7 +51,7 @@ namespace Noogadev.CallableMessaging
         /// <param name="callable">The callable that is being processed.</param>
         /// <param name="queueName">The name of the queue that is processing the callable.</param>
         /// <returns>Task</returns>
-        public Task ConsumerPreCall(ICallable callable, string? queueName) => Task.CompletedTask;
+        public Task ConsumerPreCall(ICallable callable, string? queueName);
 
         /// <summary>
         /// Used to provide a hook into the consume method for managing custom Callable types.
@@ -64,7 +64,7 @@ namespace Noogadev.CallableMessaging
         /// <param name="callable">The callable that is being processed.</param>
         /// <param name="queueName">The name of the queue that is processing the callable.</param>
         /// <returns>Task</returns>
-        public Task ConsumerPostCall(ICallable callable, string? queueName) => Task.CompletedTask;
+        public Task ConsumerPostCall(ICallable callable, string? queueName);
 
         /// <summary>
         /// Used to provide a hook into the consume method for managing custom Callable types.
@@ -77,7 +77,7 @@ namespace Noogadev.CallableMessaging
         /// <param name="callable">The callable that is being processed.</param>
         /// <param name="queueName">The name of the queue that is processing the callable.</param>
         /// <returns>Task</returns>
-        public Task ConsumerFinalizeCall(ICallable callable, string? queueName) => Task.CompletedTask;
+        public Task ConsumerFinalizeCall(ICallable callable, string? queueName);
     }
 
     /// <summary>
